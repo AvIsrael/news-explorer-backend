@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const isEmail = require('validator/lib/isEmail');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -6,10 +7,8 @@ const userSchema = new mongoose.Schema({
     unique: true,
     required: true,
     validate: {
-      validator(v) {
-        return /^(http|https):\/\/(www\.)?[a-z\d\-/.]+/gi.test(v);
-      },
-      message: (props) => `${props.value} not right link`,
+      validator: isEmail,
+      message: 'Email is not valid.',
     },
   },
   password: {
