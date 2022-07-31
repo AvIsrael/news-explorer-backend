@@ -5,7 +5,8 @@ const User = require('../models/user');
 const AuthorizationError = require('../utils/errors/autherror');
 const ConflictError = require('../utils/errors/conflicterror');
 const ValidationError = require('../utils/errors/validationerror');
-const UnauthorisedError = require('../utils/errors/unautherror');
+const { UNAUTHORIZED } = require('../utils/httpstatuscodes');
+const { JWT_DEV_SECRET } = require('../utils/constants');
 
 const { JWT_SECRET, NODE_ENV } = process.env;
 
@@ -43,7 +44,7 @@ module.exports.validateUser = (req, res, next) => {
     .select('name')
     .then((user) => {
       if (!user) {
-        next(new ValidationError('User not found.', UnauthorisedError));
+        next(new ValidationError('User not found.', UNAUTHORIZED));
         return;
       }
       bcrypt.compare(password, user.password).then((match) => {
@@ -51,7 +52,7 @@ module.exports.validateUser = (req, res, next) => {
           next(new AuthorizationError('Incorrect email or password.'));
           return;
         }
-        const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+        const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : JWT_DEV_SECRET, { expiresIn: '7d' });
         res.send({ token, name: user.name });
       });
     })
